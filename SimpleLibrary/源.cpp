@@ -42,7 +42,7 @@ int main()
 	auto LastTime = std::chrono::steady_clock::now();
 	while (true)
 	{
-		//Sleep(300);//·ÀÖ¹Õ³°ü
+		Sleep(300);//·ÀÖ¹Õ³°ü
 
 		auto CurrentTime =std::chrono::steady_clock::now();
 		auto TimeInterval = std::chrono::duration_cast<std::chrono::milliseconds>(CurrentTime - LastTime);

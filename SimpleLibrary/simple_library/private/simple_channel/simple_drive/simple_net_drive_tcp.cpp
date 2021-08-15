@@ -36,7 +36,7 @@ void HandShake(FSimpleConnection* InLink)
 	}
 	//Head改为非指针,防止右边的变量被清掉后指针无效,
 	//比如下面没有额外参数的情况，头部也会一起memset清掉
-	FSimpleBunchHead Head = *(FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer;
+	FSimpleBunchHead Head = *((FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer+4);
 	//if (FSimpleBunchHead* Head = (FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer)
 
 	DWORD ll = InLink->GetConnectionIoData().Len;

@@ -73,6 +73,28 @@ BOOL FSimpleConnection::Send()
 	//strlen以\0结尾，如果buffer前面有\0就会不准确
 	//IOData.WsaBuffer.len = strlen(IOData.Buffer);
 	IOData.WsaBuffer.len = IOData.Len;
+
+	int count = IOData.Len;
+	const char* BufTest = IOData.WsaBuffer.buf;
+	while (count>0)
+	{	
+		int DataLen = send(Socket, BufTest, count,Flag);
+		if (DataLen==SOCKET_ERROR)
+		{
+			if (WSAGetLastError() != ERROR_IO_PENDING)//GetOverlappedResult
+			{
+				return FALSE;
+			}
+		}
+		else if (DataLen==0)
+		{
+			continue;
+		}
+		BufTest += DataLen;
+		count -= DataLen;
+
+	}
+#if 0
 	if (IOData.WsaBuffer.len > 0)
 	{
 		if (send(Socket,
@@ -86,6 +108,8 @@ BOOL FSimpleConnection::Send()
 			}
 		}
 	}
+#endif
+
 
 	return TRUE;
 }
@@ -96,13 +120,27 @@ void FSimpleConnection::SetBuffer(TArray<unsigned char>& InBuffer)
 	void* InData = InBuffer.GetData();
 	IOData.Len = InBuffer.Num();
 	memset(IOData.Buffer, 0, sizeof(IOData.Buffer));
+
+	//增加4字节的包头防止粘包
+#if 0
+	int bigLen = htonl(IOData.Len);
+	IOData.Len += 4;
+	memcpy(IOData.Buffer, &bigLen, 4);
+	memcpy(IOData.Buffer + 4, InData, InBuffer.Num());
+#endif
+
+
 	memcpy(IOData.Buffer,InData,InBuffer.Num());
 }
 
 void FSimpleConnection::RecvBuffer(TArray<unsigned char>& InBuffer)
 {
+	int DataLen = 0;
+	//auto Msg = InBuffer;	
 	//接收IOData的数据到TArray
-	if (FSimpleBunchHead* Head = (FSimpleBunchHead*)IOData.Buffer)
+	DataLen = ntohl(recv(Socket, (char*)&DataLen, 4, 0));
+
+	if (FSimpleBunchHead* Head = (FSimpleBunchHead*)(IOData.Buffer))
 	{
 		if (Head->ParamNum>0)
 		{
