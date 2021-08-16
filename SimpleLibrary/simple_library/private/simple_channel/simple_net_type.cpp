@@ -12,6 +12,7 @@ FSimpleBunchHead::FSimpleBunchHead()
 	:Protocols(0),
 	ChannelID(0),
 	ParamNum(0)
+	,ParamLength(0)
 {
 
 }

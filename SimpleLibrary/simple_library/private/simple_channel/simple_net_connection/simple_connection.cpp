@@ -5,6 +5,7 @@
 FSimpleConnection::FSimpleConnection()
 	:ConnectionState(ESimpleConnectionState::Free)
 	,DriverType(ESimpleDriveType::DRIVETYPE_LISTEN)
+	,DataLength(0)
 {
 	
 }
@@ -50,6 +51,25 @@ BOOL FSimpleConnection::Recv()
 		int Flag = 0;
 		int Len = 1024;
 		int RecvCount = recv(Socket, IOData.WsaBuffer.buf, Len, Flag);
+#if 0
+		int count = 4;
+		while (count > 0)
+		{
+			int leng = recv(Socket, (char*)&DataLength, count, Flag);
+			if (leng == -1)
+			{
+				DataLength = -1;
+			}
+			else if (leng == 0)
+			{
+				DataLength = 4 - count;
+			}
+
+		}
+#endif
+
+
+
 		if (RecvCount ==SOCKET_ERROR)
 		{
 			if (WSAGetLastError() != ERROR_IO_PENDING)\
@@ -125,12 +145,15 @@ void FSimpleConnection::SetBuffer(TArray<unsigned char>& InBuffer)
 #if 0
 	int bigLen = htonl(IOData.Len);
 	IOData.Len += 4;
-	memcpy(IOData.Buffer, &bigLen, 4);
+	memcpy(IOData.Buffer, (char*)&bigLen, 4);
 	memcpy(IOData.Buffer + 4, InData, InBuffer.Num());
+
+#else
+	memcpy(IOData.Buffer,InData,InBuffer.Num());
 #endif
 
 
-	memcpy(IOData.Buffer,InData,InBuffer.Num());
+
 }
 
 void FSimpleConnection::RecvBuffer(TArray<unsigned char>& InBuffer)
@@ -138,8 +161,10 @@ void FSimpleConnection::RecvBuffer(TArray<unsigned char>& InBuffer)
 	int DataLen = 0;
 	//auto Msg = InBuffer;	
 	//接收IOData的数据到TArray
-	DataLen = ntohl(recv(Socket, (char*)&DataLen, 4, 0));
+	int count = 4;
+	//DataLen = ntohl(recv(Socket, (char*)&DataLen, count, 0));
 
+	//if (FSimpleBunchHead* Head = (FSimpleBunchHead*)(IOData.Buffer+4))
 	if (FSimpleBunchHead* Head = (FSimpleBunchHead*)(IOData.Buffer))
 	{
 		if (Head->ParamNum>0)

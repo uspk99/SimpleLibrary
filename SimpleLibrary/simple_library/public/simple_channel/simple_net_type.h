@@ -40,4 +40,5 @@ struct FSimpleBunchHead//数据头
 	unsigned int Protocols;//协议号
 	unsigned int ChannelID;//通道ID
 	unsigned int ParamNum;//参数数量
+	unsigned int ParamLength;
 };

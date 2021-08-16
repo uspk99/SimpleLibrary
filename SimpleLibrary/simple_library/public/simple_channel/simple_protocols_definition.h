@@ -20,6 +20,34 @@ public:
 		return sizeof ...(Params);//获取参数数量
 	}
 
+	//template<class T, typename ...ParamTypes>
+	//static unsigned int GetLengthParams(T& FirstParam,ParamTypes &...Params)
+	//{
+	//	return sizeof(FirstParam) + GetLengthParams(Params...);
+	//}
+
+	template<class T>
+	static unsigned int GetLengthParams(T &Params)
+	{
+		return sizeof(Params);
+	}
+
+	static unsigned int GetLengthParams()
+	{
+		return 0;
+	}
+
+	static unsigned int GetLengthParams(std::string &Params)
+	{
+		return Params.size();
+	}
+	template<class T>
+	static unsigned int GetLengthParams(std::vector<T>& Params)
+	{
+		return Params.size();
+	}
+
+
 	template<typename ...ParamTypes>
 	static void BuildSendParams(FSimpleIOStream& InStream, ParamTypes &...Params) {}
 
@@ -56,6 +84,7 @@ public:\
 		Head.Protocols = ProtocolsNumber;\
 		Head.ParamNum = FRecursionMessageInfo::GetBuildParams(Params...);\
 		Head.ChannelID = InChannel->GetGuid();\
+		Head.ParamLength =  FRecursionMessageInfo::GetLengthParams(Params...);\
 		Stream << Head;\
 		FRecursionMessageInfo::BuildSendParams(Stream, Params...);\
 		InChannel->Send(Buffer);\

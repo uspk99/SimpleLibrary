@@ -45,4 +45,6 @@ protected:
 	std::list<FSimpleChannel> Channels;
 
 	ESimpleDriveType DriverType;
+
+	int DataLength;
 };

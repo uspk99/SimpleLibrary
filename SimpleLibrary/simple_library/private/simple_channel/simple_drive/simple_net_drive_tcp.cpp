@@ -36,7 +36,13 @@ void HandShake(FSimpleConnection* InLink)
 	}
 	//Head改为非指针,防止右边的变量被清掉后指针无效,
 	//比如下面没有额外参数的情况，头部也会一起memset清掉
-	FSimpleBunchHead Head = *((FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer+4);
+	// 
+	//int InLen = *((int*)InLink->GetConnectionIoData().Buffer);
+	//auto TestPtr = InLink->GetConnectionIoData().Buffer;
+	//auto TestPtr1 = InLink->GetConnectionIoData().Buffer+4;
+	//InLen = ntohl(InLen);
+
+	FSimpleBunchHead Head = *((FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer);
 	//if (FSimpleBunchHead* Head = (FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer)
 
 	DWORD ll = InLink->GetConnectionIoData().Len;
@@ -134,6 +140,10 @@ unsigned int __stdcall Run(void* content)
 			(LPDWORD)&InLink,
 			&lpOverlapped,
 			INFINITE);//INFINITE 无限等待
+		
+		FSimpleBunchHead Head = *((FSimpleBunchHead*)InLink->GetConnectionIoData().Buffer);
+		std::cout << "IOSize：" << IOSize << "  Headlength: " << Head.ParamLength << std::endl;
+
 		if (InLink == NULL && lpOverlapped == NULL)
 		{
 			break;
@@ -148,7 +158,7 @@ unsigned int __stdcall Run(void* content)
 			//当得到了指向OVERLAPPED结构的指针以后，可以用CONTAINING RECORD宏取出其中指向扩展结构的指针。
 			switch (pData->Type)
 			{
-			case 0://接收客户端发送的信息
+			case 0://接收信息
 			{
 				InLink->GetConnectionIoData().Len = IOSize;
 				InLink->GetConnectionIoData().Buffer[IOSize] = '\0';//最长位置以\0结尾
